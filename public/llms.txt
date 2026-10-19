@@ -1,0 +1,6 @@
+# AFTERIMAGE / 余像
+
+A minimal image and video dithering darkroom by 马路Milo.
+Canonical: https://kanshao2077.github.io/afterimage-studio/
+30 algorithms, local media processing, color palettes, comparison and image/video export.
+All media processing runs in the browser. Files are not uploaded to a processing server.

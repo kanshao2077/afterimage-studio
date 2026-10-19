@@ -1,0 +1,33 @@
+import type { SerpentinePattern } from '../../types/serpentinePatterns';
+
+export interface DitherParams {
+  pattern: number;
+  threshold: number;
+  invert: boolean;
+  serpentine: boolean;
+  serpentinePattern?: SerpentinePattern;
+  errorDiffusionStrength?: number;
+  isErrorDiffusion: boolean;
+  palette?: [number, number, number][];
+  asciiRamp?: string;
+}
+
+export interface AlgorithmRunContext {
+  srcData: Uint8ClampedArray;
+  width: number;
+  height: number;
+  params: DitherParams;
+}
+
+export type AlgorithmRunner = (ctx: AlgorithmRunContext) => Uint8ClampedArray | ImageData;
+
+export interface AlgorithmMeta {
+  id: number;
+  name: string;
+  category: string;
+  supportsThreshold: boolean;
+  supportsPalette?: boolean;
+  supportsSerpentine?: boolean;
+  orderKey?: string;
+  run: AlgorithmRunner;
+}

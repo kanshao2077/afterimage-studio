@@ -1,0 +1,99 @@
+export interface AlgorithmDetail {
+  id: number;
+  name: string;
+  category: string;
+  overview: string;
+  kernel?: number[][];
+  kernelDivisor?: number;
+  orderedMatrixSize?: string;
+  characteristics: string[];
+  artifacts: string[];
+  bestFor: string[];
+  complexity: string;
+  reference?: string;
+  papers?: { title: string; url: string; note?: string }[];
+  year?: number;
+  origin?: string;
+  errorConserving?: boolean;
+  deterministic?: boolean;
+  neighborhood?: string;
+  tonalBias?: string;
+  noiseProfile?: string;
+  memoryFootprint?: string;
+  recommendedPalettes?: string[];
+  implementationNotes?: string[];
+  references?: string[];
+  notes?: string[];
+  technicalSummary?: string;
+}
+
+export const algorithmDetails: AlgorithmDetail[] = [
+  { id: 1, name: "Floyd–Steinberg", category: "Error Diffusion", overview: "Classic error-conserving diffusion (7/16,3/16,5/16,1/16) balancing quality and speed.", kernel: [[0, 0, 7], [3, 5, 1]], kernelDivisor: 16, characteristics: ["Good gradients", "Fine grain", "Baseline reference"], artifacts: ["Diagonal peppering", "Noise amplification"], bestFor: ["Photographs", "General reduction"], complexity: "O(N)", reference: "Floyd & Steinberg 1976", papers: [{ title: "An Adaptive Algorithm for Spatial Greyscale", url: "https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering", note: "Summary (Wikipedia)" }], year: 1976, origin: "Bell Labs", errorConserving: true, deterministic: true, neighborhood: "Forward 3×2 footprint", tonalBias: "Neutral", noiseProfile: "Fine directional", memoryFootprint: "1 buffer", recommendedPalettes: ["2", "4", "16", "Web 216"], implementationNotes: ["Serpentine optional to reduce directional bias"], notes: ["Widely implemented in printers & image libs."] },
+  { id: 19, name: "False Floyd–Steinberg", category: "Error Diffusion", overview: "Simplified FS with 3 neighbors (3/8,3/8,2/8) reducing arithmetic.", kernel: [[0, 0, 3], [3, 2]], kernelDivisor: 8, characteristics: ["Faster", "Acceptable quality"], artifacts: ["More directional streaks"], bestFor: ["Previews", "Low-power"], complexity: "O(N)", year: 1980, origin: "Printer firmware variants", papers: [{ title: "False Floyd–Steinberg (discussion)", url: "https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering#Variants" }], errorConserving: true, deterministic: true, neighborhood: "Forward L-shape", tonalBias: "Neutral", noiseProfile: "Slightly coarser", memoryFootprint: "In-place", recommendedPalettes: ["2", "4"], implementationNotes: ["Good fallback when performance constrained"] },
+  { id: 3, name: "Atkinson", category: "Error Diffusion", overview: "Non-conserving diffusion creating lighter mid-tones by dropping some error.", kernel: [[0, 0, 1, 1], [1, 1, 1, 0], [0, 1, 0, 0]], kernelDivisor: 8, characteristics: ["Soft look", "Light bias"], artifacts: ["Washed shadows"], bestFor: ["Pixel-art", "Glyph rendering"], complexity: "O(N)", reference: "Atkinson (Apple)", year: 1984, origin: "Apple Macintosh", errorConserving: false, deterministic: true, neighborhood: "4-wide + 2 rows subset", tonalBias: "Light", noiseProfile: "Coarser clustered", memoryFootprint: "In-place" },
+  { id: 12, name: "Sierra Lite", category: "Error Diffusion", overview: "Lightweight Sierra family variant trading detail for speed.", kernel: [[0, 0, 2], [1, 1, 0]], kernelDivisor: 4, characteristics: ["Fast", "Acceptable gradients"], artifacts: ["Grainier"], bestFor: ["Interactive previews"], complexity: "O(N)", year: 1987, origin: "Sierra family", papers: [{ title: "Sierra family overview", url: "https://en.wikipedia.org/wiki/Dither#Error_diffusion" }], errorConserving: true, deterministic: true, neighborhood: "3×2", tonalBias: "Slight light", noiseProfile: "Higher grain" },
+  { id: 4, name: "Burkes", category: "Error Diffusion", overview: "Mid-sized kernel (5×2) smoothing better than FS with less cost than Stucki.", kernel: [[0, 0, 0, 8, 4], [2, 4, 8, 4, 2]], kernelDivisor: 32, characteristics: ["Smoother than FS", "Moderate cost"], artifacts: ["Horizontal banding if overused"], bestFor: ["Medium photos"], complexity: "O(N)", year: 1980, origin: "Burkes", errorConserving: true, deterministic: true, neighborhood: "5×2", tonalBias: "Neutral", noiseProfile: "Moderate" },
+  { id: 5, name: "Stucki", category: "Error Diffusion", overview: "Larger 5×3 kernel producing smooth gradients at higher cost.", kernel: [[0, 0, 0, 8, 4], [2, 4, 8, 4, 2], [1, 2, 4, 2, 1]], kernelDivisor: 42, characteristics: ["Smooth", "Lower noise"], artifacts: ["Slight softness"], bestFor: ["High-res photos"], complexity: "O(N) higher constant", year: 1981, origin: "Stucki", errorConserving: true, deterministic: true, neighborhood: "5×3", tonalBias: "Neutral", noiseProfile: "Lower HF" },
+  { id: 6, name: "Sierra", category: "Error Diffusion", overview: "Balanced alternative to Stucki with different weight distribution.", kernel: [[0, 0, 0, 5, 3], [2, 4, 5, 4, 2], [0, 2, 3, 2, 0]], kernelDivisor: 32, characteristics: ["Good compromise", "Balanced sharpness"], artifacts: ["Mild worm artifacts"], bestFor: ["Photos", "Retro"], complexity: "O(N)", year: 1987, origin: "Sierra family", errorConserving: true, deterministic: true, neighborhood: "5×3", tonalBias: "Neutral" },
+  { id: 13, name: "Two-Row Sierra", category: "Error Diffusion", overview: "Two-row Sierra variant balancing speed and quality.", kernel: [[0, 0, 0, 4, 3], [1, 2, 3, 2, 1]], kernelDivisor: 16, characteristics: ["Balanced", "Less cost"], artifacts: ["Directional bias"], bestFor: ["Medium resolutions"], complexity: "O(N)", year: 1987, origin: "Sierra family", errorConserving: true, deterministic: true, neighborhood: "5×2", tonalBias: "Neutral" },
+  { id: 14, name: "Stevenson–Arce", category: "Error Diffusion", overview: "Sparse wide kernel approximating blue-noise distribution.", kernel: [[0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0], [12, 0, 26, 0, 30, 0, 30, 0, 26, 0, 12], [0, 12, 0, 26, 0, 12, 0, 26, 0, 12, 0]], kernelDivisor: 200, characteristics: ["Organic texture", "Low directionality"], artifacts: ["Higher cost", "Speckling"], bestFor: ["Large artistic"], complexity: "O(N) higher constant", year: 1985, origin: "Stevenson & Arce", errorConserving: true, deterministic: true, neighborhood: "11×3 sparse", tonalBias: "Neutral", noiseProfile: "Near blue-noise" },
+  { id: 7, name: "Jarvis–Judice–Ninke", category: "Error Diffusion", overview: "Dense 5×3 kernel yielding very smooth gradients.", kernel: [[0, 0, 0, 7, 5], [3, 5, 7, 5, 3], [1, 3, 5, 3, 1]], kernelDivisor: 48, characteristics: ["Very smooth", "High fidelity"], artifacts: ["Softening"], bestFor: ["Print prep"], complexity: "O(N) higher constant", year: 1976, origin: "Jarvis, Judice, Ninke", errorConserving: true, deterministic: true, neighborhood: "5×3 dense", tonalBias: "Neutral" },
+  { id: 18, name: "Ostromoukhov", category: "Error Diffusion", overview: "Adaptive diffusion selecting weight sets based on local tone to approximate minimal artifacts.", characteristics: ["Adaptive weights", "Good tone reproduction"], artifacts: ["Slight directional variance", "More logic"], bestFor: ["Photographs", "Mixed gradients"], complexity: "O(N) higher constant", year: 2001, origin: "Ostromoukhov", errorConserving: true, deterministic: true, neighborhood: "Adaptive forward", tonalBias: "Neutral", noiseProfile: "Balanced", implementationNotes: ["Chooses among several small kernels based on intensity bucket", "Can be extended with more buckets"], papers: [{ title: "Ostromoukhov adaptive dithering (overview)", url: "https://en.wikipedia.org/wiki/Dither#Error_diffusion" }] },
+  { id: 21, name: "Adaptive FS 3×3", category: "Error Diffusion", overview: "Floyd–Steinberg diffusion using a per‑pixel threshold derived from local 3×3 mean (radius 1) to preserve edges while adapting to local tone.", kernel: [[0, 0, 7], [3, 5, 1]], kernelDivisor: 16, characteristics: ["Locally adaptive", "Edge preserving", "Low additional cost"], artifacts: ["Subtle micro halos", "Slight local contrast pumping"], bestFor: ["Textured photos", "Scanned artwork"], complexity: "O(N) + integral map", year: 2025, origin: "Dithering Studio", errorConserving: true, deterministic: true, neighborhood: "FS + 3×3 local mean", tonalBias: "Neutral / slight expansion", noiseProfile: "FS fine grain", memoryFootprint: "1 integral + 1 float buffer", recommendedPalettes: ["2", "4", "16"], implementationNotes: ["Build luminance integral image (width+1)*(height+1)", "Local mean used as dynamic threshold + global bias", "Falls back to palette‑aware FS when palette provided"], notes: ["Radius 1 chosen as balance between responsiveness and stability", "Can be extended with adaptive contrast weighting"] },
+  { id: 22, name: "Adaptive FS 7×7", category: "Error Diffusion", overview: "Floyd–Steinberg with broader 7×7 (radius 3) local mean threshold giving smoother regional tone adaptation for low‑contrast material.", kernel: [[0, 0, 7], [3, 5, 1]], kernelDivisor: 16, characteristics: ["Wide local adaptation", "Smoother regions", "Edge softening"], artifacts: ["Detail softening", "Potential halo on high contrast edges"], bestFor: ["Low‑contrast photos", "Shaded renders"], complexity: "O(N) + integral map", year: 2025, origin: "Dithering Studio", errorConserving: true, deterministic: true, neighborhood: "FS + 7×7 local mean", tonalBias: "Soft mid‑tone enhancement", noiseProfile: "Slightly lower noise than FS", memoryFootprint: "1 integral + 1 float buffer", recommendedPalettes: ["4", "16", "Web 216"], implementationNotes: ["Same integral method as 3×3 variant (larger radius)", "Broader window increases smoothing & cost", "Palette path delegates to existing FS logic"], notes: ["Use when global threshold loses subtle gradients", "May reduce crispness of fine line art"] },
+  { id: 23, name: "Sierra 2-4A", category: "Error Diffusion", overview: "Popular Sierra family kernel variant balancing smoothness and detail with moderate cost.", kernel: [[0,0,4,5,4],[2,4,5,4,2],[0,2,3,2,0]], kernelDivisor: 37, characteristics: ["Balanced texture", "Reduced directional bias"], artifacts: ["Mild softening"], bestFor: ["General photos", "Retro pixel look"], complexity: "O(N)", year: 1987, origin: "Sierra family", errorConserving: true, deterministic: true, neighborhood: "5×3", tonalBias: "Neutral", noiseProfile: "Moderate fine" },
+  { id: 16, name: "Bayer 2×2", category: "Ordered", overview: "Minimal Bayer matrix with coarse checker pattern.", orderedMatrixSize: "2x2", characteristics: ["Tiny matrix", "Strong pattern"], artifacts: ["Harsh blocks"], bestFor: ["Stylized effects"], complexity: "O(N)", year: 1973, origin: "Bayer", papers: [{ title: "Bayer Matrix", url: "https://en.wikipedia.org/wiki/Ordered_dithering" }], deterministic: true, errorConserving: false, neighborhood: "Cell compare", tonalBias: "Neutral", noiseProfile: "Coarse periodic" },
+  { id: 2, name: "Bayer 4×4", category: "Ordered", overview: "Classic 4×4 Bayer threshold pattern.", orderedMatrixSize: "4x4", characteristics: ["Predictable", "Fast"], artifacts: ["Visible tiling"], bestFor: ["Pixel-art", "Icons"], complexity: "O(N)", year: 1973, origin: "Bayer", papers: [{ title: "Ordered Dithering", url: "https://en.wikipedia.org/wiki/Ordered_dithering" }], deterministic: true, errorConserving: false, neighborhood: "Cell compare", tonalBias: "Neutral" },
+  { id: 8, name: "Bayer 8×8", category: "Ordered", overview: "Larger Bayer matrix softening pattern visibility.", orderedMatrixSize: "8x8", characteristics: ["Subtle pattern", "Deterministic"], artifacts: ["Low frequency tiling"], bestFor: ["Gradients"], complexity: "O(N)", year: 1973, origin: "Bayer", papers: [{ title: "Ordered Dithering", url: "https://en.wikipedia.org/wiki/Ordered_dithering" }], deterministic: true, errorConserving: false, neighborhood: "Cell compare" },
+  { id: 20, name: "Bayer 16×16", category: "Ordered", overview: "Large recursive Bayer for smooth transitions.", orderedMatrixSize: "16x16", characteristics: ["Very subtle", "Deterministic"], artifacts: ["Low-frequency tiles"], bestFor: ["High-res gradients"], complexity: "O(N)", year: 1973, origin: "Bayer", papers: [{ title: "Ordered Dithering", url: "https://en.wikipedia.org/wiki/Ordered_dithering" }], deterministic: true, errorConserving: false, neighborhood: "Cell compare" },
+  { id: 17, name: "Blue Noise 64×64", category: "Ordered", overview: "Procedurally generated 64×64 progressive blue-noise ranking mask.", orderedMatrixSize: "64x64", characteristics: ["Low repetition", "Even energy"], artifacts: ["Slight residual structure"], bestFor: ["General dithering", "Gradients"], complexity: "O(N)", year: 2010, origin: "Procedural table", deterministic: true, errorConserving: false, neighborhood: "Mask lookup", implementationNotes: ["Generated at startup via farthest-point sampling"] },
+  { id: 24, name: "Bayer 32×32", category: "Ordered", overview: "Large Bayer matrix offering very smooth tonal steps with visible structure minimized at high resolutions.", orderedMatrixSize: "32x32", characteristics: ["Very subtle pattern", "Fast lookup"], artifacts: ["Low-frequency tiling"], bestFor: ["Large gradient fields", "Background textures"], complexity: "O(N)", year: 1973, origin: "Bayer (extended)", deterministic: true, errorConserving: false, neighborhood: "Cell compare" },
+  { id: 15, name: "Binary Threshold", category: "Other", overview: "Global cutoff producing maximum contrast.", characteristics: ["Crisp edges", "Simple"], artifacts: ["Banding", "Tone loss"], bestFor: ["Logos", "Glyphs"], complexity: "O(N)", year: 1960, origin: "Early imaging", deterministic: true, errorConserving: false, neighborhood: "Per pixel" },
+  { id: 9, name: "Halftone", category: "Other", overview: "Block dot sizing mimicking analog halftone.", characteristics: ["Retro print", "Adjustable dots"], artifacts: ["Moiré", "Block seams"], bestFor: ["Posters"], complexity: "O(N * blockArea)", year: 2024, origin: "Project", deterministic: true, errorConserving: false, neighborhood: "Block (6×6 default)" },
+  { id: 10, name: "Random Threshold", category: "Other", overview: "Per-pixel stochastic threshold (white noise).", characteristics: ["Breaks banding", "Noisy"], artifacts: ["High noise", "Non-repeatable"], bestFor: ["Noise overlays"], complexity: "O(N)", year: 1965, origin: "Stochastic screening", deterministic: false, errorConserving: false, neighborhood: "Independent" },
+  { id: 11, name: "Dot Diffusion (Simple)", category: "Other", overview: "Simplified placeholder for dot diffusion techniques.", characteristics: ["Even-ish", "Toy example"], artifacts: ["Grid artifacts"], bestFor: ["Demonstration"], complexity: "O(N)", year: 1990, origin: "Educational", deterministic: true, errorConserving: false, neighborhood: "Local" }
+  ,{ id: 25, name: "ASCII Mosaic", category: "Other", overview: "Cell-based luminance sampling mapped to configurable ASCII ramp for mosaic style output.", characteristics: ["Custom ramps", "Stylized mosaic"], artifacts: ["Blockiness", "Detail loss at fine scales"], bestFor: ["Stylized previews", "Posterization"], complexity: "O(N)", year: 2025, origin: "Project", deterministic: true, errorConserving: false, neighborhood: "Block (4×4)" }
+  ,{ id: 26, name: "Custom Kernel", category: "Error Diffusion", overview: "User-defined error diffusion kernel with configurable matrix and divisor.", characteristics: ["Fully customizable", "Experimental"], artifacts: ["Depends on kernel design"], bestFor: ["Research", "Novel effects"], complexity: "O(N)", year: 2025, origin: "Project", deterministic: true, errorConserving: true, neighborhood: "Custom" }
+  ,{ id: 27, name: "Riemersma", category: "Error Diffusion", overview: "Space-filling curve dithering using Hilbert curve traversal with circular error buffer (default weights 1/16,1/8,1/4,1/2).", characteristics: ["Hilbert curve scan", "Non-directional", "Organic texture"], artifacts: ["Unique worm-like patterns", "Requires curve generation"], bestFor: ["Artistic effects", "Non-linear imagery"], complexity: "O(N + curve generation)", year: 1998, origin: "Riemersma", errorConserving: true, deterministic: true, neighborhood: "Circular buffer (16 pixels)", tonalBias: "Neutral", noiseProfile: "Organic, low directionality", memoryFootprint: "Curve + circular buffer", implementationNotes: ["Generates Hilbert curve based on image dimensions", "Maintains circular error buffer along curve", "Error weights applied to previous pixels in traversal order"], papers: [{ title: "A Balanced Dithering Technique", url: "https://www.compuphase.com/riemer.htm", note: "Original paper by Thiadmer Riemersma" }], notes: ["Produces unique non-linear patterns unlike scan-line algorithms", "Good for avoiding banding in gradients", "Higher overhead due to curve generation"] }
+  ,{ id: 28, name: "Posterize", category: "Other", overview: "Reduces image to specific number of tonal levels for bold, graphic poster-like effects. Threshold controls level count (2-16 levels).", characteristics: ["Adjustable levels", "Bold graphics", "Color banding"], artifacts: ["Distinct tonal steps", "Loss of smooth gradients"], bestFor: ["Poster art", "Graphic design", "Retro aesthetics"], complexity: "O(N)", year: 2025, origin: "Artistic", deterministic: true, errorConserving: false, neighborhood: "Per-pixel" }
+  ,{ id: 29, name: "Woodcut", category: "Other", overview: "High contrast edge-enhanced dithering mimicking traditional woodcut/linocut printmaking. Uses Sobel edge detection for bold artistic patterns.", characteristics: ["Edge enhancement", "High contrast", "Printmaking style"], artifacts: ["Strong outlines", "Binary tones"], bestFor: ["Artistic effects", "Bold graphics", "Traditional print look"], complexity: "O(N)", year: 2025, origin: "Artistic", deterministic: true, errorConserving: false, neighborhood: "3×3 Sobel" }
+  ,{ id: 30, name: "Stipple", category: "Other", overview: "Density-based dot placement creating stippling/engraving effects. Darker areas receive more dots. Threshold controls dot density.", characteristics: ["Dot-based", "Density variation", "Drawing-like"], artifacts: ["Grainy texture", "Sparse in bright areas"], bestFor: ["Engraving effects", "Artistic illustrations", "Pen & ink style"], complexity: "O(N)", year: 2025, origin: "Artistic", deterministic: false, errorConserving: false, neighborhood: "Independent dots" }
+];
+
+import { algorithms } from './algorithms';
+import { getAlgorithmTechnicalSummary } from './algorithmTechnicalSummaries';
+
+/**
+ * Returns algorithm details in the same order as the runtime algorithm registry.
+ * This keeps the Education/Explorer UI aligned with the actual implementation.
+ */
+export function getOrderedAlgorithmDetails(): AlgorithmDetail[] {
+  const byId = new Map<number, AlgorithmDetail>(algorithmDetails.map((d) => [d.id, d]));
+
+  return algorithms.map((meta) => {
+    const existing = byId.get(meta.id);
+    if (existing) {
+      const technicalSummary = getAlgorithmTechnicalSummary(meta.id);
+      const merged = technicalSummary ? { ...existing, technicalSummary } : existing;
+      // Ensure name/category stay consistent with the registry.
+      if (merged.name !== meta.name || merged.category !== meta.category) {
+        return { ...merged, name: meta.name, category: meta.category };
+      }
+      return merged;
+    }
+
+    // Fallback: registry algorithm exists but has no long-form info entry yet.
+    return {
+      id: meta.id,
+      name: meta.name,
+      category: meta.category,
+      overview: "",
+      characteristics: [],
+      artifacts: [],
+      bestFor: [],
+      complexity: "O(N)",
+    };
+  });
+}
+
+export const getAlgorithmDetail = (id: number) => getOrderedAlgorithmDetails().find((a) => a.id === id);

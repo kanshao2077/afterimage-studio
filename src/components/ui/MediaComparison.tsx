@@ -1,0 +1,233 @@
+import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+
+interface MediaComparisonProps {
+  beforeImage?: string;
+  beforeVideo?: HTMLVideoElement;
+  beforeLabel?: string;
+  afterLabel?: string;
+  width?: string;
+  height?: string;
+  className?: string;
+}
+
+const MediaComparison: React.FC<MediaComparisonProps> = ({
+  beforeImage,
+  beforeVideo,
+  beforeLabel,
+  afterLabel,
+  width,
+  height,
+  className = '',
+}) => {
+  const { t } = useTranslation();
+  const [sliderPosition, setSliderPosition] = useState(50);
+  const [isDragging, setIsDragging] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
+
+  // Use translations as defaults if not provided
+  const beforeLabelText = beforeLabel || t('tool.imageComparison.original');
+  const afterLabelText = afterLabel || t('tool.imageComparison.dithered');
+
+  const handleMove = (clientX: number) => {
+    if (!containerRef.current) return;
+
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+    const percent = (x / rect.width) * 100;
+    setSliderPosition(percent);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent CanvasViewport from starting pan
+    setIsDragging(true);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.stopPropagation(); // Prevent CanvasViewport from starting pan
+    setIsDragging(true);
+  };
+  
+  const handleMouseUp = () => setIsDragging(false);
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (isDragging) {
+      handleMove(e.clientX);
+    }
+  };
+
+  const handleTouchMove = (e: TouchEvent) => {
+    if (isDragging && e.touches[0]) {
+      handleMove(e.touches[0].clientX);
+    }
+  };
+
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('touchmove', handleTouchMove);
+      document.addEventListener('touchend', handleMouseUp);
+
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+        document.removeEventListener('touchmove', handleTouchMove);
+        document.removeEventListener('touchend', handleMouseUp);
+      };
+    }
+  }, [isDragging]);
+
+  useEffect(() => {
+    if (beforeVideo && videoContainerRef.current) {
+      const container = videoContainerRef.current;
+      
+      const canvas = document.createElement('canvas');
+      canvas.className = 'w-full h-full block pixelated';
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      
+      canvas.width = beforeVideo.videoWidth || 640;
+      canvas.height = beforeVideo.videoHeight || 480;
+      
+      const ctx = canvas.getContext('2d', { alpha: false });
+      if (!ctx) return;
+      
+      container.innerHTML = '';
+      container.appendChild(canvas);
+      
+      let animationFrameId: number;
+      
+      const renderFrame = () => {
+        if (beforeVideo && ctx) {
+          try {
+            ctx.drawImage(beforeVideo, 0, 0, canvas.width, canvas.height);
+          } catch (e) {
+            // Video might not be ready yet
+          }
+        }
+        animationFrameId = requestAnimationFrame(renderFrame);
+      };
+      
+      renderFrame();
+      
+      return () => {
+        cancelAnimationFrame(animationFrameId);
+        container.innerHTML = '';
+      };
+    }
+  }, [beforeVideo, width, height]);
+
+  const handleContainerMouseDown = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent CanvasViewport from starting pan on any click inside
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      className={`relative h-full w-full select-none overflow-hidden ${className}`}
+      onMouseDown={handleContainerMouseDown}
+      style={{ 
+        touchAction: 'none',
+        pointerEvents: 'auto',
+        ...(width ? { width } : null),
+        ...(height ? { height } : null)
+      }}
+    >
+      {/* Before image/video (clipped by slider) - shows original media */}
+      {/* The processed image is the canvas underneath, which shows through where this doesn't cover */}
+      <div
+        className="absolute inset-0 overflow-hidden bg-neutral-950"
+        style={{
+          clipPath: `polygon(0 0, ${sliderPosition}% 0, ${sliderPosition}% 100%, 0 100%)`,
+          WebkitClipPath: `polygon(0 0, ${sliderPosition}% 0, ${sliderPosition}% 100%, 0 100%)`,
+        }}
+      >
+        {beforeImage && (
+          <img
+            src={beforeImage}
+            alt={beforeLabelText}
+            className="block h-full w-full pixelated object-fill"
+            draggable={false}
+          />
+        )}
+        {beforeVideo && (
+          <div
+            ref={videoContainerRef}
+            className="w-full h-full"
+          />
+        )}
+        <div className="absolute top-2 left-2 px-2 py-1 bg-black/70 backdrop-blur-sm rounded text-xs font-mono text-white border border-white/20 pointer-events-none">
+          {beforeLabelText}
+        </div>
+      </div>
+
+      {/* Dithered label (always visible on the right side) */}
+      <div className="absolute top-2 right-2 px-2 py-1 bg-black/70 backdrop-blur-sm rounded text-xs font-mono text-white border border-white/20 pointer-events-none">
+        {afterLabelText}
+      </div>
+
+      {/* Slider */}
+      <div
+        className="absolute inset-y-0 w-1 bg-white cursor-ew-resize z-10 shadow-md ring-1 ring-black/40"
+        style={{ left: `${sliderPosition}%` }}
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
+        role="slider"
+        aria-label={t('common.ariaImageComparison')}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(sliderPosition)}
+        aria-valuetext={t('tool.imageComparison.percentVisible', { percent: Math.round(sliderPosition) })}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            setSliderPosition(Math.max(0, sliderPosition - 5));
+          } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            setSliderPosition(Math.min(100, sliderPosition + 5));
+          } else if (e.key === 'Home') {
+            e.preventDefault();
+            setSliderPosition(0);
+          } else if (e.key === 'End') {
+            e.preventDefault();
+            setSliderPosition(100);
+          }
+        }}
+      >
+        {/* Slider handle */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg ring-1 ring-black/40 flex items-center justify-center transition-transform hover:scale-110 active:scale-95 z-10">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+            className="text-gray-800"
+          >
+            <path
+              d="M6 9l-3 3 3 3M14 9l3 3-3 3"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+
+        {/* Vertical line extensions */}
+        <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-0.5 bg-white/80" />
+      </div>
+
+      {/* Instructions on first interaction */}
+      {!isDragging && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-black/70 backdrop-blur-sm rounded text-xs font-mono text-white/80 border border-white/20 animate-pulse-subtle pointer-events-none z-20">
+          {t('tool.imageComparison.dragToCompare')}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default MediaComparison;
